@@ -2,9 +2,8 @@
 -- -----------------------------------------------------------------------------
 -- =============================================================================                                
 --                                 
--- FileName    : GetSQLServerWithoutAADAdministrator.ps1
--- Description : This script gets a list of SQL Servers without a configured
---               AAD Administrator.
+-- FileName    : GetVMNoEnabledBackup.ps1
+-- Description : This script gets a list of VMs without an enabled backup.
 --                                                                              
 -- =============================================================================                                 
 --                                                                              
@@ -15,11 +14,15 @@
 #>
 #---------[Parameters]----------------------------------------------------------
 
-$sqlservers = Get-AzResource -ResourceType Microsoft.Sql/servers
-foreach ($sqlserver in $sqlservers)
+$VMs = Get-AzVM
+foreach ($VM in $VMs)
 {
-    $ADAdmin = Get-AzSqlServerActiveDirectoryAdministrator -ServerName $sqlserver.Name -ResourceGroupName $sqlserver.ResourceGroupName
-    if ($ADAdmin.DisplayName -eq "") {
-      $sqlserver.Name
+    $RecoveryServicesVaults = Get-AzRecoveryServicesVault | Where-Object { $_.Location -eq $VM.Location }
+    foreach ($RecoveryServicesVault in $RecoveryServicesVaults)
+    {
+        $container = Get-AzRecoveryServicesBackupContainer -VaultID $RecoveryServicesVault.ID -ContainerType "AzureVM" -Status "Registered" -FriendlyName $VM.Name
+        if (-NOT ($container) ) {
+            $VM.Name
+        }
     }
 }
