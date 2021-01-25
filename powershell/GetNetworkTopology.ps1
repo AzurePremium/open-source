@@ -21,7 +21,7 @@ $vnets = Get-AzVirtualNetwork
      "Subnet Count: " + $vnet.Subnets.count
      foreach ($subnet in $vnet.Subnets)
        {
-         "-Subnet: " + $subnet.Name + " / Address Prefix: " + $vnet.Address
+         "-Subnet: " + $subnet.Name + " / Address Prefix: " + $subnet.AddressPrefix
          if ($Subnet.IpConfigurations.count -eq 0)
            {"--Subnet has no IpConfigurations"}
          else
